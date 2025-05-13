@@ -57,7 +57,6 @@ billing-engine/
 **package.json**
 
 ```json
-// package.json
 {
   "name": "billing-engine",
   "version": "1.0.0",
@@ -89,7 +88,6 @@ billing-engine/
 **tsconfig.json**
 
 ```json
-// tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
