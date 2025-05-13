@@ -12,6 +12,20 @@ export default [
         ecmaVersion: 2020,
         sourceType: 'module',
       },
+      globals: {
+        // Jest globals
+        jest: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        // Node globals
+        console: 'readonly',
+        module: 'readonly'
+      }
     },
     plugins: {
       '@typescript-eslint': tseslint,
