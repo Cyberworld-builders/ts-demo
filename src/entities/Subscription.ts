@@ -30,5 +30,5 @@ export class Subscription extends BaseEntity {
   status: string = 'active';
 
   @OneToMany(() => Invoice, (invoice) => invoice.subscription)
-  invoices: Invoice[] = [];
+  invoices!: Invoice[];
 }

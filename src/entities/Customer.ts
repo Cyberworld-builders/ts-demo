@@ -19,11 +19,11 @@ export class Customer extends BaseEntity {
   role: string = 'user';
 
   @OneToMany(() => PaymentMethod, (paymentMethod) => paymentMethod.customer)
-  paymentMethods: PaymentMethod[] = [];
+  paymentMethods!: PaymentMethod[];
 
   @OneToMany(() => Subscription, (subscription) => subscription.customer)
-  subscriptions: Subscription[] = [];
+  subscriptions!: Subscription[];
 
   @OneToMany(() => Invoice, (invoice) => invoice.customer)
-  invoices: Invoice[] = [];
+  invoices!: Invoice[];
 }
