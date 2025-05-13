@@ -8,26 +8,24 @@ import { Subscription } from '../src/entities/Subscription';
 import { Invoice } from '../src/entities/Invoice';
 import * as paymentService from '../src/services/paymentService';
 import * as dunningService from '../src/services/dunningService';
+import { testConfig } from '../src/config/database';
 
 jest.mock('../src/services/paymentService');
 jest.mock('../src/services/dunningService');
 
 describe('Billing Engine API', () => {
   beforeAll(async () => {
-    await createConnection({
-      type: 'sqlite',
-      database: ':memory:',
-      entities: [Customer, PaymentMethod, Subscription, Invoice],
-      synchronize: true,
-    });
+    await createConnection(testConfig);
   });
 
   afterAll(async () => {
-    await getConnection().close();
+    const connection = getConnection();
+    await connection.close();
   });
 
   beforeEach(async () => {
-    await getConnection().synchronize(true); // Reset database
+    const connection = getConnection();
+    await connection.synchronize(true);
   });
 
   // 5.1 Customer & Account Management
