@@ -4,7 +4,7 @@ import tsparser from '@typescript-eslint/parser';
 
 export default [
   {
-    ignores: ['jest.config.js'],
+    ignores: ['jest.config.mjs'],
   },
   eslint.configs.recommended,
   {
