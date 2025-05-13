@@ -7,20 +7,13 @@ import { Subscription } from './entities/Subscription';
 import { Invoice } from './entities/Invoice';
 import { processPayment } from './services/paymentService';
 import { handleFailedPayment } from './services/dunningService';
-import nodemailer from 'nodemailer';
+import { sendEmail } from './services/emailService';
 import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
 app.use(express.json());
 app.set('view engine', 'ejs');
 app.set('views', './src/views');
-
-// Mock email transport (logs to console)
-const transporter = nodemailer.createTransport({
-  streamTransport: true,
-  newline: 'unix',
-  buffer: true,
-});
 
 // Initialize database
 createConnection({
@@ -29,23 +22,6 @@ createConnection({
   entities: [Customer, PaymentMethod, Subscription, Invoice],
   synchronize: true, // Auto-create tables (dev only)
 }).then(() => console.log('Database connected'));
-
-// Helper to send emails
-async function sendEmail(to: string, subject: string, body: string): Promise<boolean> {
-  try {
-    const info = await transporter.sendMail({
-      from: 'billing@example.com',
-      to,
-      subject,
-      text: body,
-    });
-    console.log(`Email sent: ${info.message.toString()}`);
-    return true;
-  } catch (error) {
-    console.error(`Email failed: ${error}`);
-    return false;
-  }
-}
 
 // 5.1 Customer & Account Management
 app.post('/api/customers', async (req: Request, res: Response) => {
@@ -60,14 +36,14 @@ app.post('/api/customers', async (req: Request, res: Response) => {
 });
 
 app.get('/api/customers/:id', async (req: Request, res: Response) => {
-  const customer = await Customer.findOne(req.params.id);
+  const customer = await Customer.findOne({ where: { id: parseInt(req.params.id) } });
   if (!customer) return res.status(404).json({ error: 'Customer not found' });
   res.json({ id: customer.id, email: customer.email, name: customer.name, role: customer.role });
 });
 
 // 5.2 Payment Methods & Processing
 app.post('/api/customers/:customerId/payment_methods', async (req: Request, res: Response) => {
-  const customer = await Customer.findOne(req.params.customerId);
+  const customer = await Customer.findOne({ where: { id: parseInt(req.params.customerId) } });
   if (!customer) return res.status(404).json({ error: 'Customer not found' });
   const { card_number } = req.body;
   if (!card_number) return res.status(400).json({ error: 'Card number required' });
@@ -81,7 +57,10 @@ app.post('/api/customers/:customerId/payment_methods', async (req: Request, res:
 
 app.post('/api/payments', async (req: Request, res: Response) => {
   const { customer_id, amount, payment_method_id } = req.body;
-  const paymentMethod = await PaymentMethod.findOne(payment_method_id, { relations: ['customer'] });
+  const paymentMethod = await PaymentMethod.findOne({ 
+    where: { id: payment_method_id },
+    relations: ['customer']
+  });
   if (!paymentMethod) return res.status(404).json({ error: 'Payment method not found' });
   const result = await processPayment(paymentMethod, amount);
   if (result.status === 'success') {
@@ -95,7 +74,7 @@ app.post('/api/payments', async (req: Request, res: Response) => {
 // 5.3 Subscription Management
 app.post('/api/subscriptions', async (req: Request, res: Response) => {
   const { customer_id, plan_name, price, billing_interval } = req.body;
-  const customer = await Customer.findOne(customer_id);
+  const customer = await Customer.findOne({ where: { id: customer_id } });
   if (!customer) return res.status(404).json({ error: 'Customer not found' });
   const subscription = new Subscription();
   subscription.customer = customer;
@@ -115,7 +94,10 @@ app.post('/api/subscriptions', async (req: Request, res: Response) => {
 });
 
 app.post('/api/subscriptions/:id/cancel', async (req: Request, res: Response) => {
-  const subscription = await Subscription.findOne(req.params.id, { relations: ['customer'] });
+  const subscription = await Subscription.findOne({ 
+    where: { id: parseInt(req.params.id) },
+    relations: ['customer']
+  });
   if (!subscription) return res.status(404).json({ error: 'Subscription not found' });
   subscription.status = 'canceled';
   subscription.endDate = new Date();
@@ -151,7 +133,10 @@ async function generateInvoice(customer: Customer, subscription: Subscription, a
 }
 
 app.get('/api/invoices/:id', async (req: Request, res: Response) => {
-  const invoice = await Invoice.findOne(req.params.id, { relations: ['customer', 'subscription'] });
+  const invoice = await Invoice.findOne({ 
+    where: { id: parseInt(req.params.id) },
+    relations: ['customer', 'subscription']
+  });
   if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
   res.json({
     id: invoice.id,
@@ -172,7 +157,10 @@ app.get('/dashboard', async (req: Request, res: Response) => {
 });
 
 app.get('/invoices/:id', async (req: Request, res: Response) => {
-  const invoice = await Invoice.findOne(req.params.id, { relations: ['customer'] });
+  const invoice = await Invoice.findOne({ 
+    where: { id: parseInt(req.params.id) },
+    relations: ['customer']
+  });
   if (!invoice) return res.status(404).send('Invoice not found');
   res.render('invoice', { invoice });
 });
