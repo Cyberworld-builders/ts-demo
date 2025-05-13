@@ -24,6 +24,56 @@ A TypeScript/Node.js app demonstrating billing engine concepts.
 - `GET /api/invoices/<id>`: Get invoice details.
 - `GET /dashboard?role=admin`: View admin dashboard.
 
+## Curl Examples
+
+**Create a customer:**
+```bash
+curl -X POST http://localhost:3000/api/customers \
+     -H "Content-Type: application/json" \
+     -d '{"email": "test@example.com", "name": "Test User", "role": "user"}'
+```
+
+**Get customer details:**
+```bash
+curl -X GET http://localhost:3000/api/customers/1
+``` 
+
+**Add payment method:**
+```bash
+curl -X POST http://localhost:3000/api/customers/1/payment_methods \
+     -H "Content-Type: application/json" \
+     -d '{"card_number": "1234567890123456"}'
+```
+
+**Process payment:**
+```bash
+curl -X POST http://localhost:3000/api/payments \
+     -H "Content-Type: application/json" \
+     -d '{"customer_id": 1, "amount": 50.0, "payment_method_id": 1}'
+```
+
+**Create subscription:**
+```bash
+curl -X POST http://localhost:3000/api/subscriptions \
+     -H "Content-Type: application/json" \
+     -d '{"customer_id": 1, "plan_name": "Pro", "price": 50.0, "billing_interval": "monthly"}'
+```
+
+**Cancel subscription:**
+```bash
+curl -X POST http://localhost:3000/api/subscriptions/1/cancel
+```
+
+**Get invoice details:**
+```bash
+curl -X GET http://localhost:3000/api/invoices/1
+```
+
+**View admin dashboard:**
+```bash
+curl http://localhost:3000/dashboard?role=admin
+```
+
 ## Notes
 - Uses SQLite for simplicity; adapt to PostgreSQL for production.
 - Mock payment gateway with 70% success rate.
