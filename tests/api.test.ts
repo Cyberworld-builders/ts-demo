@@ -13,6 +13,9 @@ import { v4 as uuidv4 } from 'uuid';
 jest.mock('../src/services/paymentService');
 jest.mock('../src/services/dunningService');
 
+// Increase timeout for all tests
+jest.setTimeout(10000);
+
 describe('Billing Engine API', () => {
   beforeEach(async () => {
     const connection = getConnection();
@@ -120,11 +123,13 @@ describe('Billing Engine API', () => {
   // 5.3 Subscription Management
   describe('Subscription Management', () => {
     let customerId: number;
+    let email: string;
 
     beforeEach(async () => {
+      email = `test-${uuidv4()}@example.com`;
       const response = await request(app)
         .post('/api/customers')
-        .send({ email: 'test@example.com', name: 'Test User' });
+        .send({ email, name: 'Test User' });
       customerId = response.body.id;
     });
 
@@ -181,11 +186,13 @@ describe('Billing Engine API', () => {
   // 5.4 Invoicing & Billing
   describe('Invoicing', () => {
     let invoiceId: number;
+    let email: string;
 
     beforeEach(async () => {
+      email = `test-${uuidv4()}@example.com`;
       const customerResponse = await request(app)
         .post('/api/customers')
-        .send({ email: 'test@example.com', name: 'Test User' });
+        .send({ email, name: 'Test User' });
       const customerId = customerResponse.body.id;
       const subResponse = await request(app)
         .post('/api/subscriptions')
@@ -232,9 +239,10 @@ describe('Billing Engine API', () => {
     });
 
     it('should display invoice details', async () => {
+      const email = `test-${uuidv4()}@example.com`;
       const customerResponse = await request(app)
         .post('/api/customers')
-        .send({ email: 'test@example.com', name: 'Test User' });
+        .send({ email, name: 'Test User' });
       const customerId = customerResponse.body.id;
       const subResponse = await request(app)
         .post('/api/subscriptions')
