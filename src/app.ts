@@ -16,7 +16,7 @@ app.set('view engine', 'ejs');
 app.set('views', './src/views');
 
 // Initialize database
-initializeDatabase().then(() => console.log('Database connected'));
+initializeDatabase().then(() => console.warn('Database connected'));
 
 // 5.1 Customer & Account Management
 app.post('/api/customers', async (req: Request, res: Response): Promise<void> => {
@@ -196,5 +196,5 @@ app.get('/invoices/:id', async (req: Request, res: Response): Promise<void> => {
 });
 
 export const startServer = (): void => {
-  app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+  app.listen(3000, () => console.warn('Server running on http://localhost:3000'));
 };
