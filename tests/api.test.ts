@@ -150,6 +150,12 @@ describe('Billing Engine API', () => {
     });
 
     it('should cancel a subscription and send proration email', async () => {
+      const email = `test-${uuidv4()}@example.com`;
+      const customerResponse = await request(app)
+        .post('/api/customers')
+        .send({ email, name: 'Test User' });
+      const customerId = customerResponse.body.id;
+      
       const subResponse = await request(app)
         .post('/api/subscriptions')
         .send({
@@ -159,13 +165,15 @@ describe('Billing Engine API', () => {
           billing_interval: 'monthly',
         });
       const subscriptionId = subResponse.body.id;
+      
       const response = await request(app).post(`/api/subscriptions/${subscriptionId}/cancel`);
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
         id: subscriptionId,
         status: 'canceled',
       });
-      const subscription = await Subscription.findOne(subscriptionId);
+      
+      const subscription = await Subscription.findOne({ where: { id: subscriptionId } });
       expect(subscription!.endDate).toBeDefined();
     });
   });

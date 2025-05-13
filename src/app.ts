@@ -27,7 +27,12 @@ app.post('/api/customers', async (req: Request, res: Response) => {
   customer.name = name || '';
   customer.role = role || 'user';
   await customer.save();
-  res.status(201).json({ id: customer.id, email: customer.email, role: customer.role });
+  res.status(201).json({ 
+    id: customer.id, 
+    email: customer.email, 
+    name: customer.name,
+    role: customer.role 
+  });
 });
 
 app.get('/api/customers/:id', async (req: Request, res: Response) => {
