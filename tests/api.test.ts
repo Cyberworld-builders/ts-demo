@@ -2,8 +2,6 @@
 import request from 'supertest';
 import { getConnection } from 'typeorm';
 import { app } from '../src/app';
-import { Customer } from '../src/entities/Customer';
-import { PaymentMethod } from '../src/entities/PaymentMethod';
 import { Subscription } from '../src/entities/Subscription';
 import { Invoice } from '../src/entities/Invoice';
 import * as paymentService from '../src/services/paymentService';

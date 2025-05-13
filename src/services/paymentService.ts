@@ -12,10 +12,12 @@ export async function processPayment(paymentMethod: PaymentMethod, amount: numbe
   return result;
 }
 
-function mockPaymentGateway(token: string, amount: number): PaymentResult {
+/* eslint-disable */
+function mockPaymentGateway(_token: string, _amount: number): PaymentResult {
   // Simulate payment processing (70% success rate)
   if (Math.random() < 0.7) {
     return { status: 'success', transaction_id: Math.floor(1000 + Math.random() * 9000).toString() };
   }
   return { status: 'failed', error: 'insufficient_funds' };
 }
+/* eslint-enable */

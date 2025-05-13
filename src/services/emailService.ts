@@ -15,7 +15,7 @@ export async function sendEmail(to: string, subject: string, body: string): Prom
       subject,
       text: body,
     });
-    console.log(`Email sent: ${info.message.toString()}`);
+    console.warn(`Email sent: ${info.message.toString()}`);
     return true;
   } catch (error) {
     console.error(`Email failed: ${error}`);
