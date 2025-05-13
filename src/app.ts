@@ -19,9 +19,12 @@ app.set('views', './src/views');
 initializeDatabase().then(() => console.log('Database connected'));
 
 // 5.1 Customer & Account Management
-app.post('/api/customers', async (req: Request, res: Response) => {
+app.post('/api/customers', async (req: Request, res: Response): Promise<void> => {
   const { email, name, role } = req.body;
-  if (!email) return res.status(400).json({ error: 'Email is required' });
+  if (!email) {
+    res.status(400).json({ error: 'Email is required' });
+    return;
+  }
   const customer = new Customer();
   customer.email = email;
   customer.name = name || '';
@@ -35,18 +38,27 @@ app.post('/api/customers', async (req: Request, res: Response) => {
   });
 });
 
-app.get('/api/customers/:id', async (req: Request, res: Response) => {
+app.get('/api/customers/:id', async (req: Request, res: Response): Promise<void> => {
   const customer = await Customer.findOne({ where: { id: parseInt(req.params.id) } });
-  if (!customer) return res.status(404).json({ error: 'Customer not found' });
+  if (!customer) {
+    res.status(404).json({ error: 'Customer not found' });
+    return;
+  }
   res.json({ id: customer.id, email: customer.email, name: customer.name, role: customer.role });
 });
 
 // 5.2 Payment Methods & Processing
-app.post('/api/customers/:customerId/payment_methods', async (req: Request, res: Response) => {
+app.post('/api/customers/:customerId/payment_methods', async (req: Request, res: Response): Promise<void> => {
   const customer = await Customer.findOne({ where: { id: parseInt(req.params.customerId) } });
-  if (!customer) return res.status(404).json({ error: 'Customer not found' });
+  if (!customer) {
+    res.status(404).json({ error: 'Customer not found' });
+    return;
+  }
   const { card_number } = req.body;
-  if (!card_number) return res.status(400).json({ error: 'Card number required' });
+  if (!card_number) {
+    res.status(400).json({ error: 'Card number required' });
+    return;
+  }
   const paymentMethod = new PaymentMethod();
   paymentMethod.customer = customer;
   paymentMethod.cardNumber = card_number.slice(-4);
@@ -55,27 +67,33 @@ app.post('/api/customers/:customerId/payment_methods', async (req: Request, res:
   res.status(201).json({ id: paymentMethod.id, card_number: paymentMethod.cardNumber });
 });
 
-app.post('/api/payments', async (req: Request, res: Response) => {
-  const { customer_id, amount, payment_method_id } = req.body;
+app.post('/api/payments', async (req: Request, res: Response): Promise<void> => {
+  const { amount, payment_method_id } = req.body;
   const paymentMethod = await PaymentMethod.findOne({ 
     where: { id: payment_method_id },
     relations: ['customer']
   });
-  if (!paymentMethod) return res.status(404).json({ error: 'Payment method not found' });
+  if (!paymentMethod) {
+    res.status(404).json({ error: 'Payment method not found' });
+    return;
+  }
   const result = await processPayment(paymentMethod, amount);
   if (result.status === 'success') {
-    return res.json(result);
-  } else {
-    await handleFailedPayment(paymentMethod.customer, paymentMethod, amount);
-    return res.status(400).json(result);
+    res.json(result);
+    return;
   }
+  await handleFailedPayment(paymentMethod.customer, paymentMethod, amount);
+  res.status(400).json(result);
 });
 
 // 5.3 Subscription Management
-app.post('/api/subscriptions', async (req: Request, res: Response) => {
+app.post('/api/subscriptions', async (req: Request, res: Response): Promise<void> => {
   const { customer_id, plan_name, price, billing_interval } = req.body;
   const customer = await Customer.findOne({ where: { id: customer_id } });
-  if (!customer) return res.status(404).json({ error: 'Customer not found' });
+  if (!customer) {
+    res.status(404).json({ error: 'Customer not found' });
+    return;
+  }
   const subscription = new Subscription();
   subscription.customer = customer;
   subscription.planName = plan_name;
@@ -93,12 +111,15 @@ app.post('/api/subscriptions', async (req: Request, res: Response) => {
   });
 });
 
-app.post('/api/subscriptions/:id/cancel', async (req: Request, res: Response) => {
+app.post('/api/subscriptions/:id/cancel', async (req: Request, res: Response): Promise<void> => {
   const subscription = await Subscription.findOne({ 
     where: { id: parseInt(req.params.id) },
     relations: ['customer']
   });
-  if (!subscription) return res.status(404).json({ error: 'Subscription not found' });
+  if (!subscription) {
+    res.status(404).json({ error: 'Subscription not found' });
+    return;
+  }
   subscription.status = 'canceled';
   subscription.endDate = new Date();
   await subscription.save();
@@ -132,12 +153,15 @@ async function generateInvoice(customer: Customer, subscription: Subscription, a
   return invoice;
 }
 
-app.get('/api/invoices/:id', async (req: Request, res: Response) => {
+app.get('/api/invoices/:id', async (req: Request, res: Response): Promise<void> => {
   const invoice = await Invoice.findOne({ 
     where: { id: parseInt(req.params.id) },
     relations: ['customer', 'subscription']
   });
-  if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+  if (!invoice) {
+    res.status(404).json({ error: 'Invoice not found' });
+    return;
+  }
   res.json({
     id: invoice.id,
     customer_id: invoice.customer.id,
@@ -148,23 +172,29 @@ app.get('/api/invoices/:id', async (req: Request, res: Response) => {
 });
 
 // 5.10 Admin Dashboard
-app.get('/dashboard', async (req: Request, res: Response) => {
+app.get('/dashboard', async (req: Request, res: Response): Promise<void> => {
   const role = req.query.role as string;
-  if (role !== 'admin') return res.status(403).send('Access denied');
+  if (role !== 'admin') {
+    res.status(403).send('Access denied');
+    return;
+  }
   const customers = await Customer.find();
   const invoices = await Invoice.find({ relations: ['customer'] });
   res.render('dashboard', { customers, invoices });
 });
 
-app.get('/invoices/:id', async (req: Request, res: Response) => {
+app.get('/invoices/:id', async (req: Request, res: Response): Promise<void> => {
   const invoice = await Invoice.findOne({ 
     where: { id: parseInt(req.params.id) },
     relations: ['customer']
   });
-  if (!invoice) return res.status(404).send('Invoice not found');
+  if (!invoice) {
+    res.status(404).send('Invoice not found');
+    return;
+  }
   res.render('invoice', { invoice });
 });
 
-export const startServer = () => {
-  return app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+export const startServer = (): void => {
+  app.listen(3000, () => console.log('Server running on http://localhost:3000'));
 };
