@@ -1,4 +1,4 @@
-import { createConnection } from 'typeorm';
+import { createConnection, getConnection } from 'typeorm';
 import { Customer } from '../src/entities/Customer';
 import { PaymentMethod } from '../src/entities/PaymentMethod';
 import { Subscription } from '../src/entities/Subscription';
@@ -16,13 +16,12 @@ beforeAll(async () => {
 
 // Cleanup after each test
 afterEach(async () => {
-  const connection = await createConnection();
+  const connection = getConnection();
   await connection.synchronize(true); // This will clear all tables
-  await connection.close();
 });
 
 // Cleanup after all tests
 afterAll(async () => {
-  const connection = await createConnection();
+  const connection = getConnection();
   await connection.close();
 });

@@ -8,6 +8,7 @@ import { Subscription } from '../src/entities/Subscription';
 import { Invoice } from '../src/entities/Invoice';
 import * as paymentService from '../src/services/paymentService';
 import * as dunningService from '../src/services/dunningService';
+import { v4 as uuidv4 } from 'uuid';
 
 jest.mock('../src/services/paymentService');
 jest.mock('../src/services/dunningService');
@@ -21,28 +22,30 @@ describe('Billing Engine API', () => {
   // 5.1 Customer & Account Management
   describe('Customer Management', () => {
     it('should create a customer', async () => {
+      const email = `test-${uuidv4()}@example.com`;
       const response = await request(app)
         .post('/api/customers')
-        .send({ email: 'test@example.com', name: 'Test User', role: 'user' });
+        .send({ email, name: 'Test User', role: 'user' });
       expect(response.status).toBe(201);
       expect(response.body).toEqual({
         id: expect.any(Number),
-        email: 'test@example.com',
+        email,
         name: 'Test User',
         role: 'user',
       });
     });
 
     it('should get a customer by ID', async () => {
+      const email = `test-${uuidv4()}@example.com`;
       const createResponse = await request(app)
         .post('/api/customers')
-        .send({ email: 'test@example.com', name: 'Test User', role: 'user' });
+        .send({ email, name: 'Test User', role: 'user' });
       const customerId = createResponse.body.id;
       const response = await request(app).get(`/api/customers/${customerId}`);
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
         id: customerId,
-        email: 'test@example.com',
+        email,
         name: 'Test User',
         role: 'user',
       });
@@ -58,11 +61,13 @@ describe('Billing Engine API', () => {
   // 5.2 Payment Methods & Processing
   describe('Payment Methods & Processing', () => {
     let customerId: number;
+    let email: string;
 
     beforeEach(async () => {
+      email = `test-${uuidv4()}@example.com`;
       const response = await request(app)
         .post('/api/customers')
-        .send({ email: 'test@example.com', name: 'Test User' });
+        .send({ email, name: 'Test User' });
       customerId = response.body.id;
     });
 
