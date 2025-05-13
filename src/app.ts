@@ -1,6 +1,5 @@
 // src/app.ts
 import express, { Request, Response } from 'express';
-import { createConnection } from 'typeorm';
 import { Customer } from './entities/Customer';
 import { PaymentMethod } from './entities/PaymentMethod';
 import { Subscription } from './entities/Subscription';
@@ -9,19 +8,15 @@ import { processPayment } from './services/paymentService';
 import { handleFailedPayment } from './services/dunningService';
 import { sendEmail } from './services/emailService';
 import { v4 as uuidv4 } from 'uuid';
+import { initializeDatabase } from './config/connection';
 
-const app = express();
+export const app = express();
 app.use(express.json());
 app.set('view engine', 'ejs');
 app.set('views', './src/views');
 
 // Initialize database
-createConnection({
-  type: 'sqlite',
-  database: 'billing.db',
-  entities: [Customer, PaymentMethod, Subscription, Invoice],
-  synchronize: true, // Auto-create tables (dev only)
-}).then(() => console.log('Database connected'));
+initializeDatabase().then(() => console.log('Database connected'));
 
 // 5.1 Customer & Account Management
 app.post('/api/customers', async (req: Request, res: Response) => {
@@ -32,7 +27,12 @@ app.post('/api/customers', async (req: Request, res: Response) => {
   customer.name = name || '';
   customer.role = role || 'user';
   await customer.save();
-  res.status(201).json({ id: customer.id, email: customer.email, role: customer.role });
+  res.status(201).json({ 
+    id: customer.id, 
+    email: customer.email, 
+    name: customer.name,
+    role: customer.role 
+  });
 });
 
 app.get('/api/customers/:id', async (req: Request, res: Response) => {
@@ -165,4 +165,6 @@ app.get('/invoices/:id', async (req: Request, res: Response) => {
   res.render('invoice', { invoice });
 });
 
-app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+export const startServer = () => {
+  return app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+};
