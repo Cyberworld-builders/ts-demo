@@ -1,6 +1,6 @@
 // tests/api.test.ts
 import request from 'supertest';
-import { createConnection, getConnection } from 'typeorm';
+import { getConnection } from 'typeorm';
 import { app } from '../src/app';
 import { Customer } from '../src/entities/Customer';
 import { PaymentMethod } from '../src/entities/PaymentMethod';
@@ -8,21 +8,11 @@ import { Subscription } from '../src/entities/Subscription';
 import { Invoice } from '../src/entities/Invoice';
 import * as paymentService from '../src/services/paymentService';
 import * as dunningService from '../src/services/dunningService';
-import { testConfig } from '../src/config/database';
 
 jest.mock('../src/services/paymentService');
 jest.mock('../src/services/dunningService');
 
 describe('Billing Engine API', () => {
-  beforeAll(async () => {
-    await createConnection(testConfig);
-  });
-
-  afterAll(async () => {
-    const connection = getConnection();
-    await connection.close();
-  });
-
   beforeEach(async () => {
     const connection = getConnection();
     await connection.synchronize(true);

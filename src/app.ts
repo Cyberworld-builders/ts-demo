@@ -8,11 +8,15 @@ import { processPayment } from './services/paymentService';
 import { handleFailedPayment } from './services/dunningService';
 import { sendEmail } from './services/emailService';
 import { v4 as uuidv4 } from 'uuid';
+import { initializeDatabase } from './config/connection';
 
 export const app = express();
 app.use(express.json());
 app.set('view engine', 'ejs');
 app.set('views', './src/views');
+
+// Initialize database
+initializeDatabase().then(() => console.log('Database connected'));
 
 // 5.1 Customer & Account Management
 app.post('/api/customers', async (req: Request, res: Response) => {
