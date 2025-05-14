@@ -1,5 +1,5 @@
 import os
-from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader
@@ -19,7 +19,9 @@ def index_codebase(directory: str, chroma_host: str, chroma_port: int):
 
     # Initialize OpenAI embeddings with API key from environment variables
     openai_api_key = os.getenv('OPENAI_API_KEY')
-    embeddings = OpenAIEmbeddings(api_key=openai_api_key)
+    if not openai_api_key:
+        raise ValueError("OPENAI_API_KEY environment variable is not set")
+    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 
     # Connect to ChromaDB
     vectorstore = Chroma(
