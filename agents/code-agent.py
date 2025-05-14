@@ -17,8 +17,9 @@ def index_codebase(directory: str, chroma_host: str, chroma_port: int):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     texts = text_splitter.split_documents(documents)
 
-    # Initialize OpenAI embeddings
-    embeddings = OpenAIEmbeddings()
+    # Initialize OpenAI embeddings with API key from environment variables
+    openai_api_key = os.getenv('OPENAI_API_KEY')
+    embeddings = OpenAIEmbeddings(api_key=openai_api_key)
 
     # Connect to ChromaDB
     vectorstore = Chroma(

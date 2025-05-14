@@ -34,3 +34,4 @@ jobs:
         env:
           CHROMADB_HOST: localhost
           CHROMADB_PORT: 8000
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
