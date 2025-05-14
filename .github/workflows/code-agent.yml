@@ -1,8 +1,9 @@
 name: Code Agent Workflow
 
 # usage 
-# gh workflow run code-agent.yml
-
+# export BRANCH_NAME=$(gh pr list --json headRefName --jq '.[].headRefName')
+# gh workflow run code-agent.yml --ref $BRANCH_NAME
+ 
 on:
   workflow_dispatch:
 
@@ -13,5 +14,5 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Run Agent
-        run: python agent.py
+        run: python code-agent.py
         working-directory: agents
