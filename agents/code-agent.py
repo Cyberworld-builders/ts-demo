@@ -1,12 +1,16 @@
 import os
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
+from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import DirectoryLoader
+from langchain_community.document_loaders import DirectoryLoader
 
 def index_codebase(directory: str, chroma_host: str, chroma_port: int):
-    # Load all files from the directory recursively
-    loader = DirectoryLoader(directory, glob="**/*.*")
+    # Load all files from the directory recursively, excluding certain file types
+    loader = DirectoryLoader(
+        directory,
+        glob="**/*.{ts,js,py,md,txt}",
+        exclude=["**/node_modules/**", "**/dist/**", "**/.git/**"]
+    )
     documents = loader.load()
 
     # Split documents into manageable chunks
