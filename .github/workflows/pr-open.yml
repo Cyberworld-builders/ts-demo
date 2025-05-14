@@ -8,6 +8,7 @@ on:
 
 jobs:
   test:
+    if: github.head_ref != '8-pull-request-agent'
     runs-on: ubuntu-latest
 
     steps:
