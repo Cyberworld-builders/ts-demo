@@ -1,0 +1,17 @@
+name: Code Agent Workflow
+
+# usage 
+# gh workflow run code-agent.yml
+
+on:
+  workflow_dispatch:
+
+jobs:
+  process-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Run Agent
+        run: python agent.py
+        working-directory: agents
